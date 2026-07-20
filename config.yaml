@@ -49,3 +49,6 @@ app:
   - "Done"
   - "Pending"
   - "NA"
+  qis_type_options:
+  - "Split AC"
+  - "6DS"

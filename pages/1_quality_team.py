@@ -20,7 +20,7 @@ with st.form("quality_form", clear_on_submit=True):
         entry_date = st.date_input("Date *", value=date.today())
         qis_no = st.text_input("QIS No *")
     with col2:
-        qis_type = st.text_input("Type *", placeholder="e.g. split AC QIS, 6DS")
+        qis_type = st.selectbox("Type *", cfg["app"]["qis_type_options"])
         pdi = st.selectbox("PDI *", cfg["app"]["pdi_options"])
 
     submitted = st.form_submit_button("Save Entry", type="primary")
@@ -28,8 +28,6 @@ with st.form("quality_form", clear_on_submit=True):
 if submitted:
     if not qis_no.strip():
         st.error("QIS No is required.")
-    elif not qis_type.strip():
-        st.error("Type is required.")
     else:
         row = {
             "Date": entry_date,
