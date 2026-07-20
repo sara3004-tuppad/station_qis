@@ -30,11 +30,12 @@ def get_config() -> dict:
     secrets = st.secrets if hasattr(st, "secrets") else {}
 
     if "graph" in secrets:
+        g = secrets["graph"]
         cfg["graph"] = {
-            "tenant_id": secrets["graph"]["tenant_id"],
-            "client_id": secrets["graph"]["client_id"],
-            "username":  secrets["graph"]["username"],
-            "password":  secrets["graph"]["password"],
+            "tenant_id": g.get("tenant_id", ""),
+            "client_id": g.get("client_id", ""),
+            "username":  g.get("username", ""),
+            "password":  g.get("password", ""),
         }
 
     if "power_automate" in secrets:
@@ -44,7 +45,7 @@ def get_config() -> dict:
         cfg["sharepoint"]["folder_share_url"] = secrets["sharepoint"].get("folder_share_url", "")
 
     if "excel" in secrets:
-        cfg["excel"]["sharepoint_url"] = secrets["excel"]["sharepoint_url"]
+        cfg["excel"]["sharepoint_url"] = secrets["excel"].get("sharepoint_url", "")
 
     _config = cfg
     return _config

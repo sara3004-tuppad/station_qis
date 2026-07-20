@@ -1,6 +1,13 @@
 # Set to true to run without Azure credentials (mocks email + SharePoint)
 dev_mode: true
 
+# Graph API credentials — loaded from secrets (only used when dev_mode: false)
+graph:
+  tenant_id: ""
+  client_id: ""
+  username: ""
+  password: ""
+
 # Power Automate — email only (no Graph API needed for sending mail)
 power_automate:
   webhook_url: ""   # email trigger — set via secrets
