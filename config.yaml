@@ -10,55 +10,46 @@ graph:
 
 # Power Automate — email only (no Graph API needed for sending mail)
 power_automate:
-  webhook_url: ""   # email trigger — set via secrets
+  webhook_url: "" # email trigger — set via secrets
 
 # SharePoint — share URLs loaded from secrets
 # Share the invoice folder with qis-app@... and paste its share URL in secrets
 sharepoint:
-  folder_share_url: ""  # set via secrets
+  folder_share_url: "" # set via secrets
 
 # Excel tracker — share URL loaded from secrets
 excel:
-  sharepoint_url: ""    # set via secrets
-  local_cache_path: "data/Stations movement Tracker.xlsx"  # used in dev_mode only
+  sharepoint_url: "" # set via secrets
+  local_cache_path: "data/Stations movement Tracker.xlsx" # used in dev_mode only
   quality_sheet: "Quality clearance sheet"
   allocation_sheet: "Allocation sheet - working"
 
 # Email configuration
 email:
-  sender: ""                                # your Outlook address
+  sender: "sara.tuppad@indofastenergy.com" # your Outlook address
   recipients:
-    quality_team: []                        # e.g. ["user@company.com"]
+    quality_team: [ "gmukul11@gmail.com" ] # e.g. ["user@company.com"]
     stores_team: []
     cpt: []
     deployment_team: []
   # which fields per sheet must be non-empty to consider a row "complete"
   completion_check:
     allocation:
-      - "Allocation"
-      - "Date of Dispatch"
-      - "No of QIS delivered"
-      - "E-Way Bill"
+    - "Allocation"
+    - "Date of Dispatch"
+    - "No of QIS delivered"
+    - "E-Way Bill"
   email_template: "templates/email_body.html"
   subject_template: "QIS Station Movement Update - {site_name}"
 
 # App settings
 app:
   title: "Stations Movement Tracker"
-  roles:
-    - "Quality Team"
-    - "Stores Team"
-    - "CPT"
-  # Set a password per role to restrict access (leave empty string for no password)
-  role_passwords:
-    Quality Team: ""
-    Stores Team: ""
-    CPT: ""
   pickup_status_options:
-    - "Picked up"
-    - "In Transit"
-    - "Hold"
+  - "Picked up"
+  - "In Transit"
+  - "Hold"
   pdi_options:
-    - "Done"
-    - "Pending"
-    - "NA"
+  - "Done"
+  - "Pending"
+  - "NA"

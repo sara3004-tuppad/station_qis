@@ -12,11 +12,6 @@ st.set_page_config(page_title="Quality Team", layout="centered")
 inject_mobile_css()
 st.title("Quality Team — Add QIS Entry")
 
-role = st.session_state.get("role", "")
-if role != "Quality Team":
-    st.warning("This page is for Quality Team only. Please select the correct role on the Home page.")
-    st.stop()
-
 st.subheader("New QIS Entry")
 
 with st.form("quality_form", clear_on_submit=True):

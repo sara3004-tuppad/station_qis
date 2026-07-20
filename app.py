@@ -11,36 +11,16 @@ st.set_page_config(
 inject_mobile_css()
 
 st.title(cfg["app"]["title"])
-
-# Role selector in sidebar
-st.sidebar.header("Select Your Role")
-roles = cfg["app"]["roles"]
-role = st.sidebar.selectbox("I am from:", roles)
-
-# Optional role password check
-passwords = cfg["app"].get("role_passwords", {})
-required_pw = passwords.get(role, "")
-if required_pw:
-    entered = st.sidebar.text_input("Password", type="password")
-    if entered != required_pw:
-        st.sidebar.error("Incorrect password.")
-        st.warning("Please enter the correct password for your role.")
-        st.stop()
-
-st.session_state["role"] = role
-st.sidebar.success(f"Logged in as: **{role}**")
-
-# Navigation guidance
 st.markdown(
-    f"""
-    Welcome, **{role}**. Use the sidebar pages to complete your tasks:
+    """
+    Use the sidebar to navigate to your page:
 
-    | Page | For |
+    | Page | Purpose |
     |---|---|
-    | Quality Team | Quality Team — add new QIS entries |
-    | Stores (QC Update) | Stores Team — update Pickup Status & GRN Date |
-    | CPT | CPT — set Allocation & Remarks |
-    | Stores (Dispatch) | Stores Team — fill dispatch info & upload invoice PDF |
-    | Deployment View | Read-only — view Deployment Team data from MS Forms |
+    | Quality Team | Add new QIS entries |
+    | Stores (QC Update) | Update Pickup Status & GRN Date |
+    | CPT | Set Allocation & Remarks |
+    | Stores (Dispatch) | Fill dispatch info & upload invoice PDF |
+    | Deployment View | Read-only — Deployment Team data |
     """
 )

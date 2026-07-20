@@ -16,11 +16,6 @@ st.set_page_config(page_title="Stores — QC Update", layout="centered")
 inject_mobile_css()
 st.title("Stores Team — Quality Clearance Update")
 
-role = st.session_state.get("role", "")
-if role != "Stores Team":
-    st.warning("This page is for Stores Team only. Please select the correct role on the Home page.")
-    st.stop()
-
 try:
     df = read_quality_sheet()
 except Exception as e:

@@ -12,11 +12,6 @@ st.set_page_config(page_title="CPT", layout="centered")
 inject_mobile_css()
 st.title("CPT — Allocation & Remarks")
 
-role = st.session_state.get("role", "")
-if role != "CPT":
-    st.warning("This page is for CPT only. Please select the correct role on the Home page.")
-    st.stop()
-
 try:
     df = read_allocation_sheet()
 except Exception as e:
