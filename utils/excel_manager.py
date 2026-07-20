@@ -101,7 +101,7 @@ def append_quality_row(row: dict):
                 break
         ws.cell(row=first_empty, column=1, value=first_empty - 2)
         ws.cell(row=first_empty, column=2, value=row.get("Date"))
-        ws.cell(row=first_empty, column=3, value=f'=IF(B{first_empty}="","",TEXT(B{first_empty},"mmmm"))')
+        ws.cell(row=first_empty, column=3, value=row.get("Date").strftime("%B") if row.get("Date") else "")
         ws.cell(row=first_empty, column=4, value=row.get("QIS No"))
         ws.cell(row=first_empty, column=5, value=row.get("Type"))
         ws.cell(row=first_empty, column=6, value=row.get("PDI"))
