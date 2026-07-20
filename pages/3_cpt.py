@@ -22,16 +22,36 @@ if df.empty:
     st.info("No deployment entries yet. Deployment Team data must be synced first.")
     st.stop()
 
-site_options = df["Site Name"].dropna().tolist()
-selected_site = st.selectbox("Select Site to update", site_options)
+# ---------------------------------------------------------------------------
+# All deployment sites — full overview for CPT to review before deciding
+# ---------------------------------------------------------------------------
+st.subheader("All Deployment Sites")
+deployment_cols = [
+    "Site Name", "Site Type", "No of QIS required", "Region",
+    "City", "Lat", "Long", "Address", "POC",
+    "Projected Energization Date", "Priority", "Allocation",
+]
+existing_cols = [c for c in deployment_cols if c in df.columns]
+st.dataframe(df[existing_cols], use_container_width=True, hide_index=True)
 
+st.divider()
+
+# ---------------------------------------------------------------------------
+# Update allocation for a selected site
+# ---------------------------------------------------------------------------
+st.subheader("Update Allocation")
+site_options = df["Site Name"].dropna().tolist()
+selected_site = st.selectbox("Select Site", site_options)
 selected_row = df[df["Site Name"] == selected_site].iloc[0]
 
-with st.expander("Deployment Team Details", expanded=True):
-    cols = ["Site Name", "Site Type", "No of QIS required", "Region", "City",
-            "Address", "POC", "Projected Energization Date", "Priority"]
-    disp = {c: selected_row.get(c, "") for c in cols if c in selected_row}
-    st.json(disp)
+# Show full site details so CPT has all info before deciding
+detail_cols = [
+    "Site Name", "Site Type", "No of QIS required", "Region", "City",
+    "Address", "POC", "Projected Energization Date", "Priority",
+]
+with st.expander("Site Details", expanded=True):
+    disp = {c: selected_row.get(c, "") for c in detail_cols if c in selected_row}
+    st.table(pd.Series(disp).rename("Value"))
 
 with st.form("cpt_form"):
     allocation = st.selectbox(
@@ -59,7 +79,3 @@ if submitted:
             st.info("All allocation fields complete — notification email sent.")
     except Exception as e:
         st.error(f"Failed to save: {e}")
-
-st.divider()
-st.subheader("All Allocation Entries")
-st.dataframe(df, use_container_width=True, hide_index=True)

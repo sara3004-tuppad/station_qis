@@ -1,4 +1,5 @@
 .env
+test_*.py
 __pycache__/
 *.pyc
 data/*_backup_*.xlsx
