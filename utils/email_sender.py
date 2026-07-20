@@ -1,21 +1,19 @@
 """
-Send emails via a Power Automate HTTP-triggered flow.
+Send emails via Office 365 SMTP.
 
-The flow receives a JSON payload and uses its Office 365 Send Email action.
-No Graph API app registration or credentials required — the flow runs under
-the flow owner's account.
+Uses the same M365 credentials already in secrets (graph.username / graph.password).
+No Power Automate, no admin consent, no premium license required.
 
-Power Automate flow setup (one-time):
-1. Create a new flow: Trigger = "When an HTTP request is received"
-2. Add action: "Send an email (V2)" (Office 365 Outlook connector)
-   - To:      @{triggerBody()?['to']}
-   - Subject: @{triggerBody()?['subject']}
-   - Body:    @{triggerBody()?['body']}         (toggle to HTML mode)
-3. Optionally add "Add attachment" if you need PDF support later
-4. Save the flow and copy the HTTP POST URL into secrets as power_automate.webhook_url
+Office 365 SMTP settings:
+  Host: smtp.office365.com
+  Port: 587 (STARTTLS)
 """
 
-import requests
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
 from utils.config import get_config
 
@@ -36,11 +34,6 @@ def send_completion_email(
     pdf_bytes: bytes | None = None,
     pdf_filename: str | None = None,
 ):
-    """
-    sheet: 'quality_clearance' or 'allocation'
-    row_data: dict of field values for the completed row
-    pdf_bytes / pdf_filename: ignored for now (attach in the flow if needed)
-    """
     cfg = get_config()
 
     if cfg.get("dev_mode"):
@@ -48,19 +41,19 @@ def send_completion_email(
         send_email_mock(sheet, row_data, pdf_bytes, pdf_filename)
         return
 
-    webhook_url = cfg.get("power_automate", {}).get("webhook_url", "")
-    if not webhook_url:
-        raise RuntimeError(
-            "power_automate.webhook_url is not set in secrets. "
-            "Create a Power Automate HTTP-triggered flow and paste its URL."
-        )
+    graph_cfg = cfg.get("graph", {})
+    sender = graph_cfg.get("username", "")
+    password = graph_cfg.get("password", "")
+    if not sender or not password:
+        raise RuntimeError("graph.username and graph.password must be set in secrets to send email.")
 
-    email_cfg = cfg["email"]
     recipients = _all_recipients(cfg)
-    site_name = row_data.get("Site Name", row_data.get("QIS No", "Unknown"))
-    subject = email_cfg["subject_template"].format(site_name=site_name)
+    if not recipients:
+        return
 
-    # Build a plain HTML table from row_data so the flow needs zero templating
+    site_name = row_data.get("Site Name", row_data.get("QIS No", "Unknown"))
+    subject = cfg["email"]["subject_template"].format(site_name=site_name)
+
     rows_html = "".join(
         f"<tr><td style='padding:4px 8px;border:1px solid #ddd'><b>{k}</b></td>"
         f"<td style='padding:4px 8px;border:1px solid #ddd'>{v}</td></tr>"
@@ -75,12 +68,20 @@ def send_completion_email(
     <p style='color:#888;font-size:12px'>Sent automatically by Station QIS Tracker</p>
     """
 
-    payload = {
-        "to": ";".join(recipients),   # Power Automate accepts semicolon-separated
-        "subject": subject,
-        "body": body_html,
-        "sheet": sheet,
-    }
+    msg = MIMEMultipart("mixed")
+    msg["From"] = sender
+    msg["To"] = ", ".join(recipients)
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body_html, "html"))
 
-    resp = requests.post(webhook_url, json=payload, timeout=30)
-    resp.raise_for_status()
+    if pdf_bytes and pdf_filename:
+        part = MIMEBase("application", "pdf")
+        part.set_payload(pdf_bytes)
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f'attachment; filename="{pdf_filename}"')
+        msg.attach(part)
+
+    with smtplib.SMTP("smtp.office365.com", 587) as server:
+        server.starttls()
+        server.login(sender, password)
+        server.sendmail(sender, recipients, msg.as_string())

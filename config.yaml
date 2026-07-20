@@ -8,10 +8,6 @@ graph:
   username: ""
   password: ""
 
-# Power Automate — email only (no Graph API needed for sending mail)
-power_automate:
-  webhook_url: "" # email trigger — set via secrets
-
 # SharePoint — share URLs loaded from secrets
 # Share the invoice folder with qis-app@... and paste its share URL in secrets
 sharepoint:

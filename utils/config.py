@@ -38,9 +38,6 @@ def get_config() -> dict:
             "password":  g.get("password", ""),
         }
 
-    if "power_automate" in secrets:
-        cfg["power_automate"]["webhook_url"] = secrets["power_automate"].get("webhook_url", "")
-
     if "sharepoint" in secrets:
         cfg["sharepoint"]["folder_share_url"] = secrets["sharepoint"].get("folder_share_url", "")
 
