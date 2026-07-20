@@ -3,6 +3,10 @@ Read/write the Stations Movement Tracker Excel on SharePoint.
 
 In dev_mode the local cache file is used directly (no network calls).
 In production the file is fetched/saved via Power Automate HTTP flows.
+
+Caching strategy:
+- read_quality_sheet / read_allocation_sheet are cached (ttl=300s fallback)
+- every write calls st.cache_data.clear() so the next read is always fresh
 """
 
 import io
@@ -11,6 +15,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+import streamlit as st
 from openpyxl import load_workbook
 from utils.config import get_config
 
@@ -45,17 +50,23 @@ def _upload_wb_bytes(data: bytes):
 
 @contextmanager
 def _open_workbook():
-    """Download, yield an openpyxl workbook, then upload the saved bytes."""
+    """Download, yield an openpyxl workbook, upload saved bytes, then clear cache."""
     raw = _download_wb_bytes()
     wb = load_workbook(io.BytesIO(raw))
     yield wb
     buf = io.BytesIO()
     wb.save(buf)
     _upload_wb_bytes(buf.getvalue())
+    st.cache_data.clear()
+
+
+@st.cache_data(ttl=300)
+def _cached_wb_bytes() -> bytes:
+    return _download_wb_bytes()
 
 
 def _read_sheet_df(sheet_name: str) -> pd.DataFrame:
-    raw = _download_wb_bytes()
+    raw = _cached_wb_bytes()
     df = pd.read_excel(io.BytesIO(raw), sheet_name=sheet_name, header=1)
     return df
 
@@ -64,11 +75,11 @@ def _read_sheet_df(sheet_name: str) -> pd.DataFrame:
 # Quality Clearance Sheet
 # ---------------------------------------------------------------------------
 
+@st.cache_data(ttl=300)
 def read_quality_sheet() -> pd.DataFrame:
     cfg = get_config()
     df = _read_sheet_df(cfg["excel"]["quality_sheet"])
-    df = df.dropna(how="all")
-    return df
+    return df.dropna(how="all")
 
 
 def append_quality_row(row: dict):
@@ -104,12 +115,11 @@ def update_quality_row_stores(qis_no: str, pickup_status: str, grn_date):
 # Allocation Sheet
 # ---------------------------------------------------------------------------
 
+@st.cache_data(ttl=300)
 def read_allocation_sheet() -> pd.DataFrame:
     cfg = get_config()
     df = _read_sheet_df(cfg["excel"]["allocation_sheet"])
-    df = df.dropna(subset=["Site Name"])
-    return df
-
+    return df.dropna(subset=["Site Name"])
 
 
 def update_cpt_row(site_name: str, allocation: str, remarks: str):
@@ -152,7 +162,7 @@ def mark_email_sent(site_name: str):
 
 
 # ---------------------------------------------------------------------------
-# Completion checks
+# Completion checks — use cached reads, no extra download
 # ---------------------------------------------------------------------------
 
 def is_quality_row_complete(qis_no: str) -> bool:
