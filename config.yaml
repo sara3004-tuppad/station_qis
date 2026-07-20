@@ -1,21 +1,18 @@
 # Set to true to run without Azure credentials (mocks email + SharePoint)
 dev_mode: true
 
-# All Power Automate HTTP trigger URLs are loaded from secrets.
-# No Graph API app registration or admin permissions required —
-# flows run under the flow owner's delegated account.
+# Power Automate — email only (no Graph API needed for sending mail)
 power_automate:
-  webhook_url: ""        # email trigger
-  excel_download_url: "" # returns base64 Excel bytes
-  excel_upload_url: ""   # receives base64 Excel bytes and overwrites file
-  pdf_upload_url: ""     # receives base64 PDF + filename, returns SharePoint URL
+  webhook_url: ""   # email trigger — set via secrets
 
-# SharePoint PDF storage folder — used only by the pdf-upload Power Automate flow
+# SharePoint — share URLs loaded from secrets
+# Share the invoice folder with qis-app@... and paste its share URL in secrets
 sharepoint:
-  upload_folder: "Shared Documents/QIS Invoices"
+  folder_share_url: ""  # set via secrets
 
-# Excel tracker
+# Excel tracker — share URL loaded from secrets
 excel:
+  sharepoint_url: ""    # set via secrets
   local_cache_path: "data/Stations movement Tracker.xlsx"  # used in dev_mode only
   quality_sheet: "Quality clearance sheet"
   allocation_sheet: "Allocation sheet - working"

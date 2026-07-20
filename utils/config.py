@@ -6,7 +6,8 @@ st.secrets (sensitive values injected by Streamlit Cloud or local
 Usage:
     from utils.config import get_config
     cfg = get_config()
-    cfg["power_automate"]["webhook_url"]   # from secrets
+    cfg["graph"]["password"]               # from secrets
+    cfg["excel"]["sharepoint_url"]         # from secrets
     cfg["app"]["title"]                    # from config.yaml
 """
 
@@ -28,10 +29,22 @@ def get_config() -> dict:
 
     secrets = st.secrets if hasattr(st, "secrets") else {}
 
+    if "graph" in secrets:
+        cfg["graph"] = {
+            "tenant_id": secrets["graph"]["tenant_id"],
+            "client_id": secrets["graph"]["client_id"],
+            "username":  secrets["graph"]["username"],
+            "password":  secrets["graph"]["password"],
+        }
+
     if "power_automate" in secrets:
-        for key in ("webhook_url", "excel_download_url", "excel_upload_url", "pdf_upload_url"):
-            if key in secrets["power_automate"]:
-                cfg["power_automate"][key] = secrets["power_automate"][key]
+        cfg["power_automate"]["webhook_url"] = secrets["power_automate"].get("webhook_url", "")
+
+    if "sharepoint" in secrets:
+        cfg["sharepoint"]["folder_share_url"] = secrets["sharepoint"].get("folder_share_url", "")
+
+    if "excel" in secrets:
+        cfg["excel"]["sharepoint_url"] = secrets["excel"]["sharepoint_url"]
 
     _config = cfg
     return _config

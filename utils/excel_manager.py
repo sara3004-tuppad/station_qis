@@ -36,16 +36,16 @@ def _local_path() -> Path:
 def _download_wb_bytes() -> bytes:
     if _is_dev():
         return _local_path().read_bytes()
-    from utils.pa_client import download_excel
-    return download_excel()
+    from utils.graph_client import download_excel_from_sharepoint
+    return download_excel_from_sharepoint(get_config()["excel"]["sharepoint_url"])
 
 
 def _upload_wb_bytes(data: bytes):
     if _is_dev():
         _local_path().write_bytes(data)
         return
-    from utils.pa_client import upload_excel
-    upload_excel(data)
+    from utils.graph_client import upload_excel_to_sharepoint
+    upload_excel_to_sharepoint(get_config()["excel"]["sharepoint_url"], data)
 
 
 @contextmanager
