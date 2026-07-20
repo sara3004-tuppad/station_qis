@@ -119,6 +119,22 @@ def update_quality_row_stores(qis_no: str, pickup_status: str, grn_date):
                 break
 
 
+def bulk_update_quality_rows_stores(updates: dict):
+    """Write pickup status and GRN date for multiple QIS numbers in one workbook open.
+    updates: {qis_no: {"pickup_status": str, "grn_date": date or None}}
+    """
+    cfg = get_config()
+    sheet_name = cfg["excel"]["quality_sheet"]
+    with _open_workbook() as wb:
+        ws = wb[sheet_name]
+        for row in ws.iter_rows(min_row=3):
+            qis_no = str(row[3].value)
+            if qis_no in updates:
+                entry = updates[qis_no]
+                row[6].value = entry.get("pickup_status") or ""
+                row[7].value = entry.get("grn_date")
+
+
 # ---------------------------------------------------------------------------
 # Allocation Sheet
 # ---------------------------------------------------------------------------

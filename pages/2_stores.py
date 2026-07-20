@@ -8,7 +8,7 @@ from utils.config import get_config
 from utils.excel_manager import (
     read_quality_sheet,
     read_allocation_sheet,
-    update_quality_row_stores,
+    bulk_update_quality_rows_stores,
     update_stores_dispatch_row,
     mark_email_sent,
     is_allocation_row_complete,
@@ -38,39 +38,66 @@ with tab_qc:
     if qc_df.empty:
         st.info("No QIS entries found. Quality Team must add entries first.")
     else:
-        qis_options = qc_df["QIS No"].dropna().astype(str).tolist()
-        selected_qis = st.selectbox("Select QIS No to update", qis_options)
-        selected_row = qc_df[qc_df["QIS No"].astype(str) == selected_qis].iloc[0]
+        pickup_options = cfg["app"]["pickup_status_options"]
 
-        st.markdown(
-            f"**Type:** {selected_row.get('Type', '')} | "
-            f"**PDI:** {selected_row.get('PDI', '')} | "
-            f"**Date:** {selected_row.get('Date', '')}"
-        )
+        # Rows pending: Pickup status OR GRN Date is blank
+        def _is_pending(row):
+            pickup = str(row.get("Pickup status", "")).strip()
+            grn = str(row.get("GRN Date", "")).strip()
+            return not pickup or not grn or pickup == "" or grn == ""
 
-        with st.form("stores_qc_form"):
-            col1, col2 = st.columns(2)
-            with col1:
-                pickup_status = st.selectbox(
-                    "Pickup Status *",
-                    cfg["app"]["pickup_status_options"],
-                    index=cfg["app"]["pickup_status_options"].index(selected_row["Pickup status"])
-                    if pd.notna(selected_row.get("Pickup status")) and selected_row["Pickup status"] in cfg["app"]["pickup_status_options"]
-                    else 0,
-                )
-            with col2:
-                grn_date = st.date_input(
-                    "GRN Date *",
-                    value=selected_row["GRN Date"] if pd.notna(selected_row.get("GRN Date")) else date.today(),
-                )
-            submitted_qc = st.form_submit_button("Save Update", type="primary")
+        pending_mask = qc_df.apply(_is_pending, axis=1)
+        pending_df = qc_df[pending_mask].copy()
 
-        if submitted_qc:
-            try:
-                update_quality_row_stores(selected_qis, pickup_status, grn_date)
-                st.success(f"Updated QIS {selected_qis} — Pickup: {pickup_status}, GRN Date: {grn_date}")
-            except Exception as e:
-                st.error(f"Failed to update: {e}")
+        if pending_df.empty:
+            st.success("All QIS entries have Pickup Status and GRN Date filled.")
+        else:
+            st.caption(f"{len(pending_df)} pending entries — edit directly in the table below, then click Save.")
+
+            # Build editable subset: read-only context cols + editable cols
+            display_cols = ["QIS No", "Type", "PDI", "Date", "Pickup status", "GRN Date"]
+            edit_df = pending_df[display_cols].reset_index(drop=True)
+
+            # Normalise GRN Date column to date objects for the date picker
+            edit_df["GRN Date"] = pd.to_datetime(edit_df["GRN Date"], errors="coerce").dt.date
+
+            edited = st.data_editor(
+                edit_df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "QIS No": st.column_config.TextColumn("QIS No", disabled=True),
+                    "Type": st.column_config.TextColumn("Type", disabled=True),
+                    "PDI": st.column_config.TextColumn("PDI", disabled=True),
+                    "Date": st.column_config.TextColumn("Date", disabled=True),
+                    "Pickup status": st.column_config.SelectboxColumn(
+                        "Pickup Status",
+                        options=pickup_options,
+                        required=False,
+                    ),
+                    "GRN Date": st.column_config.DateColumn(
+                        "GRN Date",
+                        format="YYYY-MM-DD",
+                    ),
+                },
+                key="qc_editor",
+            )
+
+            if st.button("Save All Updates", type="primary"):
+                updates = {}
+                for _, row in edited.iterrows():
+                    qis_no = str(row["QIS No"])
+                    updates[qis_no] = {
+                        "pickup_status": row["Pickup status"] if pd.notna(row["Pickup status"]) else "",
+                        "grn_date": row["GRN Date"] if pd.notna(row["GRN Date"]) else None,
+                    }
+                try:
+                    with st.spinner("Saving to Excel..."):
+                        bulk_update_quality_rows_stores(updates)
+                    st.success(f"Saved {len(updates)} entries.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to save: {e}")
 
         st.divider()
         st.subheader("All Quality Entries")
