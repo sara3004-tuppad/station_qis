@@ -1,5 +1,5 @@
 # Set to true to run without Azure credentials (mocks email + SharePoint)
-dev_mode: true
+dev_mode: false
 
 # Graph API credentials — loaded from secrets (only used when dev_mode: false)
 graph:
