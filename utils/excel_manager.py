@@ -21,10 +21,10 @@ from utils.config import get_config
 
 
 def _sanitize_df(df: pd.DataFrame) -> pd.DataFrame:
-    """Convert mixed-type columns to strings so PyArrow can serialize them."""
-    for col in df.columns:
-        if df[col].apply(type).nunique() > 1:
-            df[col] = df[col].astype(str).replace("nan", "")
+    """Coerce all object-dtype columns to strings so PyArrow can serialize them.
+    Object columns are the source of mixed int64/str/bytes type errors."""
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].astype(str).replace("nan", "")
     return df
 
 
