@@ -29,12 +29,8 @@ def get_config() -> dict:
     # Overlay secrets — works both in Streamlit Cloud and local secrets.toml
     secrets = st.secrets if hasattr(st, "secrets") else {}
 
-    if "graph" in secrets:
-        cfg["graph"] = {
-            "tenant_id": secrets["graph"]["tenant_id"],
-            "client_id": secrets["graph"]["client_id"],
-            "client_secret": secrets["graph"]["client_secret"],
-        }
+    if "power_automate" in secrets:
+        cfg["power_automate"]["webhook_url"] = secrets["power_automate"]["webhook_url"]
 
     if "sharepoint" in secrets:
         cfg["sharepoint"]["site_url"] = secrets["sharepoint"].get("site_url", "")

@@ -1,10 +1,11 @@
 # Set to true to run without Azure credentials (mocks email + SharePoint)
 dev_mode: true
 
-# Azure / Microsoft Graph API
-# Secrets (tenant_id, client_id, client_secret) are loaded from
-# .streamlit/secrets.toml locally or Streamlit Cloud Secrets in production.
-graph: {}
+# Power Automate HTTP trigger webhook URL is loaded from secrets.
+# No Graph API credentials needed — Power Automate handles email via its
+# own Office 365 connector using the flow owner's account.
+power_automate:
+  webhook_url: ""   # set via secrets
 
 # SharePoint PDF storage
 # site_url is loaded from secrets
