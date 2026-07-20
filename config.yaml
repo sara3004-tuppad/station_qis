@@ -1,0 +1,58 @@
+# Set to true to run without Azure credentials (mocks email + SharePoint)
+dev_mode: true
+
+# Azure / Microsoft Graph API
+# Secrets (tenant_id, client_id, client_secret) are loaded from
+# .streamlit/secrets.toml locally or Streamlit Cloud Secrets in production.
+graph: {}
+
+# SharePoint PDF storage
+# site_url is loaded from secrets
+sharepoint:
+  upload_folder: "Shared Documents/QIS Invoices"
+
+# Excel tracker file on SharePoint
+# sharepoint_url is loaded from secrets
+excel:
+  local_cache_path: "data/Stations movement Tracker.xlsx"  # used in dev_mode only
+  quality_sheet: "Quality clearance sheet"
+  allocation_sheet: "Allocation sheet - working"
+
+# Email configuration
+email:
+  sender: ""                                # your Outlook address
+  recipients:
+    quality_team: []                        # e.g. ["user@company.com"]
+    stores_team: []
+    cpt: []
+    deployment_team: []
+  # which fields per sheet must be non-empty to consider a row "complete"
+  completion_check:
+    allocation:
+      - "Allocation"
+      - "Date of Dispatch"
+      - "No of QIS delivered"
+      - "E-Way Bill"
+  email_template: "templates/email_body.html"
+  subject_template: "QIS Station Movement Update - {site_name}"
+
+# App settings
+app:
+  title: "Stations Movement Tracker"
+  roles:
+    - "Quality Team"
+    - "Stores Team"
+    - "CPT"
+  # Set a password per role to restrict access (leave empty string for no password)
+  role_passwords:
+    Quality Team: ""
+    Stores Team: ""
+    CPT: ""
+  pickup_status_options:
+    - "Picked up"
+    - "In Transit"
+    - "Hold"
+  pdi_options:
+    - "Done"
+    - "Pending"
+    - "NA"

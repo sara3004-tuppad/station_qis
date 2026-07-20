@@ -11,26 +11,20 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-import yaml
 from openpyxl import load_workbook
-
-
-def _load_config():
-    config_path = Path(__file__).parent.parent / "config.yaml"
-    with open(config_path) as f:
-        return yaml.safe_load(f)
+from utils.config import get_config
 
 
 def _is_dev() -> bool:
-    return _load_config().get("dev_mode", False)
+    return get_config().get("dev_mode", False)
 
 
 def _sharepoint_url() -> str:
-    return _load_config()["excel"]["sharepoint_url"]
+    return get_config()["excel"]["sharepoint_url"]
 
 
 def _local_path() -> Path:
-    cfg = _load_config()
+    cfg = get_config()
     return Path(__file__).parent.parent / cfg["excel"]["local_cache_path"]
 
 
@@ -75,14 +69,14 @@ def _read_sheet_df(sheet_name: str) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 def read_quality_sheet() -> pd.DataFrame:
-    cfg = _load_config()
+    cfg = get_config()
     df = _read_sheet_df(cfg["excel"]["quality_sheet"])
     df = df.dropna(how="all")
     return df
 
 
 def append_quality_row(row: dict):
-    cfg = _load_config()
+    cfg = get_config()
     sheet_name = cfg["excel"]["quality_sheet"]
     with _open_workbook() as wb:
         ws = wb[sheet_name]
@@ -99,7 +93,7 @@ def append_quality_row(row: dict):
 
 
 def update_quality_row_stores(qis_no: str, pickup_status: str, grn_date):
-    cfg = _load_config()
+    cfg = get_config()
     sheet_name = cfg["excel"]["quality_sheet"]
     with _open_workbook() as wb:
         ws = wb[sheet_name]
@@ -115,7 +109,7 @@ def update_quality_row_stores(qis_no: str, pickup_status: str, grn_date):
 # ---------------------------------------------------------------------------
 
 def read_allocation_sheet() -> pd.DataFrame:
-    cfg = _load_config()
+    cfg = get_config()
     df = _read_sheet_df(cfg["excel"]["allocation_sheet"])
     df = df.dropna(subset=["Site Name"])
     return df
@@ -123,7 +117,7 @@ def read_allocation_sheet() -> pd.DataFrame:
 
 
 def update_cpt_row(site_name: str, allocation: str, remarks: str):
-    cfg = _load_config()
+    cfg = get_config()
     sheet_name = cfg["excel"]["allocation_sheet"]
     with _open_workbook() as wb:
         ws = wb[sheet_name]
@@ -135,7 +129,7 @@ def update_cpt_row(site_name: str, allocation: str, remarks: str):
 
 
 def update_stores_dispatch_row(site_name: str, data: dict):
-    cfg = _load_config()
+    cfg = get_config()
     sheet_name = cfg["excel"]["allocation_sheet"]
     with _open_workbook() as wb:
         ws = wb[sheet_name]
@@ -149,7 +143,7 @@ def update_stores_dispatch_row(site_name: str, data: dict):
 
 
 def mark_email_sent(site_name: str):
-    cfg = _load_config()
+    cfg = get_config()
     sheet_name = cfg["excel"]["allocation_sheet"]
     with _open_workbook() as wb:
         ws = wb[sheet_name]
@@ -166,7 +160,7 @@ def mark_email_sent(site_name: str):
 # ---------------------------------------------------------------------------
 
 def is_quality_row_complete(qis_no: str) -> bool:
-    cfg = _load_config()
+    cfg = get_config()
     fields = cfg["email"]["completion_check"]["quality_clearance"]
     col_map = {
         "Date": "Date", "QIS No": "QIS No", "Type": "Type",
@@ -181,7 +175,7 @@ def is_quality_row_complete(qis_no: str) -> bool:
 
 
 def is_allocation_row_complete(site_name: str) -> bool:
-    cfg = _load_config()
+    cfg = get_config()
     fields = cfg["email"]["completion_check"]["allocation"]
     col_map = {
         "Allocation": "Allocation", "Date of Dispatch": "Date of Dispatch",

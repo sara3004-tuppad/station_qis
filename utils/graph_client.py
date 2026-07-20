@@ -1,25 +1,14 @@
 import base64
 import requests
-import yaml
-from pathlib import Path
+from utils.config import get_config
 
-_config = None
 _token = None
-
-
-def _load_config():
-    global _config
-    if _config is None:
-        config_path = Path(__file__).parent.parent / "config.yaml"
-        with open(config_path) as f:
-            _config = yaml.safe_load(f)
-    return _config
 
 
 def get_access_token() -> str:
     import msal
     global _token
-    cfg = _load_config()["graph"]
+    cfg = get_config()["graph"]
     authority = f"https://login.microsoftonline.com/{cfg['tenant_id']}"
     app = msal.ConfidentialClientApplication(
         client_id=cfg["client_id"],

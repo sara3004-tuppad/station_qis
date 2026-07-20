@@ -1,15 +1,7 @@
 import re
-from pathlib import Path
 
-import yaml
-
+from utils.config import get_config
 from utils.graph_client import graph_get, graph_put_bytes
-
-
-def _load_config():
-    config_path = Path(__file__).parent.parent / "config.yaml"
-    with open(config_path) as f:
-        return yaml.safe_load(f)
 
 
 def _get_site_id(site_url: str) -> str:
@@ -31,7 +23,7 @@ def _get_drive_id(site_id: str) -> str:
 
 
 def _upload_pdf_real(file_bytes: bytes, filename: str) -> str:
-    cfg = _load_config()
+    cfg = get_config()
     sp_cfg = cfg["sharepoint"]
     site_id = _get_site_id(sp_cfg["site_url"])
     drive_id = _get_drive_id(site_id)
@@ -46,7 +38,7 @@ def _upload_pdf_real(file_bytes: bytes, filename: str) -> str:
 
 def upload_pdf(file_bytes: bytes, filename: str) -> str:
     """Upload PDF to SharePoint; returns web URL of the uploaded file."""
-    if _load_config().get("dev_mode"):
+    if get_config().get("dev_mode"):
         from utils.dev_mock import upload_pdf_mock
         return upload_pdf_mock(file_bytes, filename)
     return _upload_pdf_real(file_bytes, filename)

@@ -1,23 +1,17 @@
-import yaml
-from pathlib import Path
 from datetime import date
 
 import pandas as pd
 import streamlit as st
 from utils.styles import inject_mobile_css
 
+from utils.config import get_config
 from utils.excel_manager import (
     read_quality_sheet,
     update_quality_row_stores,
 )
 
 
-def load_config():
-    with open(Path(__file__).parent.parent / "config.yaml") as f:
-        return yaml.safe_load(f)
-
-
-cfg = load_config()
+cfg = get_config()
 st.set_page_config(page_title="Stores — QC Update", layout="centered")
 inject_mobile_css()
 st.title("Stores Team — Quality Clearance Update")

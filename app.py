@@ -1,13 +1,8 @@
-import yaml
-from pathlib import Path
 import streamlit as st
+from utils.config import get_config
 from utils.styles import inject_mobile_css
 
-def load_config():
-    with open(Path(__file__).parent / "config.yaml") as f:
-        return yaml.safe_load(f)
-
-cfg = load_config()
+cfg = get_config()
 st.set_page_config(
     page_title=cfg["app"]["title"],
     page_icon="🚉",

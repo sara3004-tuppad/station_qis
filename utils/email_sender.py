@@ -1,16 +1,10 @@
 import base64
 from pathlib import Path
 
-import yaml
 from jinja2 import Environment, FileSystemLoader
 
+from utils.config import get_config
 from utils.graph_client import graph_post
-
-
-def _load_config():
-    config_path = Path(__file__).parent.parent / "config.yaml"
-    with open(config_path) as f:
-        return yaml.safe_load(f)
 
 
 def _render_body(template_file: str, context: dict) -> str:
@@ -41,7 +35,7 @@ def send_completion_email(
     row_data: dict of all field values for the completed row
     pdf_bytes / pdf_filename: optional invoice attachment
     """
-    cfg = _load_config()
+    cfg = get_config()
     if cfg.get("dev_mode"):
         from utils.dev_mock import send_email_mock
         send_email_mock(sheet, row_data, pdf_bytes, pdf_filename)
