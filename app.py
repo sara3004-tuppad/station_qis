@@ -15,12 +15,11 @@ st.markdown(
     """
     Use the sidebar to navigate to your page:
 
-    | Page | Purpose |
-    |---|---|
-    | Quality Team | Add new QIS entries |
-    | Stores (QC Update) | Update Pickup Status & GRN Date |
-    | CPT | Set Allocation & Remarks |
-    | Stores (Dispatch) | Fill dispatch info & upload invoice PDF |
-    | Deployment View | Read-only — Deployment Team data |
+    | Page | Who | What to do |
+    |---|---|---|
+    | Quality Team | Quality Team | Add new QIS entries (Type, PDI, Date) |
+    | Stores | Stores Team | **QC Update** tab — update Pickup Status & GRN Date |
+    | Stores | Stores Team | **Dispatch** tab — fill dispatch info & upload invoice PDF |
+    | CPT | CPT Team | Review all deployment sites and set Allocation & Remarks |
     """
 )
