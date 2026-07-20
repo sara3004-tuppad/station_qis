@@ -85,20 +85,27 @@ with tab_qc:
             )
 
             if st.button("Save All Updates", type="primary"):
-                # Apply edits from session state delta onto the base df
-                # (the `edited` return value may be stale on button-click rerun)
-                merged = edit_df.copy()
+                # Read user edits from session state delta — more reliable than
+                # the returned DataFrame which resets on button-click rerun
                 delta = st.session_state.get("qc_editor", {}).get("edited_rows", {})
-                for row_idx, changes in delta.items():
-                    for col, val in changes.items():
-                        merged.at[int(row_idx), col] = val
 
                 updates = {}
-                for _, row in merged.iterrows():
+                for i, row in edit_df.iterrows():
                     qis_no = str(row["QIS No"])
+                    row_delta = delta.get(str(i), delta.get(i, {}))
+                    pickup = row_delta.get("Pickup status", row["Pickup status"])
+                    grn_raw = row_delta.get("GRN Date", row["GRN Date"])
+                    # grn_raw may be a string ("2026-07-21"), date object, or None
+                    if grn_raw and str(grn_raw).strip().lower() not in ("", "none", "nan", "nat"):
+                        try:
+                            grn = pd.to_datetime(grn_raw).date()
+                        except Exception:
+                            grn = None
+                    else:
+                        grn = None
                     updates[qis_no] = {
-                        "pickup_status": row["Pickup status"] if pd.notna(row["Pickup status"]) else "",
-                        "grn_date": row["GRN Date"] if pd.notna(row["GRN Date"]) else None,
+                        "pickup_status": pickup if pickup and str(pickup).strip().lower() not in ("", "none", "nan") else "",
+                        "grn_date": grn,
                     }
                 try:
                     with st.spinner("Saving to Excel..."):
