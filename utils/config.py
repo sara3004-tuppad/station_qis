@@ -32,10 +32,11 @@ def get_config() -> dict:
     if "graph" in secrets:
         g = secrets["graph"]
         cfg["graph"] = {
-            "tenant_id": g.get("tenant_id", ""),
-            "client_id": g.get("client_id", ""),
-            "username":  g.get("username", ""),
-            "password":  g.get("password", ""),
+            "tenant_id":     g.get("tenant_id", ""),
+            "client_id":     g.get("client_id", ""),
+            "username":      g.get("username", ""),
+            "password":      g.get("password", ""),
+            "refresh_token": g.get("refresh_token", ""),
         }
 
     if "sharepoint" in secrets:

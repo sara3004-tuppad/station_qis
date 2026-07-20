@@ -1,11 +1,9 @@
 """
-Graph API client using ROPC (delegated) auth.
+Graph API client using device-flow refresh token auth.
 
-Requires only Files.ReadWrite delegated permission on the app registration.
-The service account (qis-app@...) must have SharePoint share access to:
-  - the specific Excel file
-  - the invoice upload folder
-No tenant-wide permissions needed.
+One-time setup: run get_refresh_token.py locally to get a refresh token,
+then store it in secrets as graph.refresh_token.
+No admin consent needed — authenticates as the file owner via their own token.
 """
 
 import base64
@@ -16,6 +14,8 @@ from utils.config import get_config
 
 _token = None
 
+SCOPES = ["https://graph.microsoft.com/Files.ReadWrite"]
+
 
 def get_access_token() -> str:
     global _token
@@ -24,10 +24,15 @@ def get_access_token() -> str:
         client_id=cfg["client_id"],
         authority=f"https://login.microsoftonline.com/{cfg['tenant_id']}",
     )
-    result = app.acquire_token_by_username_password(
-        username=cfg["username"],
-        password=cfg["password"],
-        scopes=["https://graph.microsoft.com/Files.ReadWrite"],
+    refresh_token = cfg.get("refresh_token", "")
+    if not refresh_token:
+        raise RuntimeError(
+            "graph.refresh_token is not set in secrets. "
+            "Run get_refresh_token.py locally to generate one."
+        )
+    result = app.acquire_token_by_refresh_token(
+        refresh_token=refresh_token,
+        scopes=SCOPES,
     )
     if "access_token" not in result:
         raise RuntimeError(f"Graph auth failed: {result.get('error_description')}")
