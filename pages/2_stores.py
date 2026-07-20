@@ -85,8 +85,16 @@ with tab_qc:
             )
 
             if st.button("Save All Updates", type="primary"):
+                # Apply edits from session state delta onto the base df
+                # (the `edited` return value may be stale on button-click rerun)
+                merged = edit_df.copy()
+                delta = st.session_state.get("qc_editor", {}).get("edited_rows", {})
+                for row_idx, changes in delta.items():
+                    for col, val in changes.items():
+                        merged.at[int(row_idx), col] = val
+
                 updates = {}
-                for _, row in edited.iterrows():
+                for _, row in merged.iterrows():
                     qis_no = str(row["QIS No"])
                     updates[qis_no] = {
                         "pickup_status": row["Pickup status"] if pd.notna(row["Pickup status"]) else "",
