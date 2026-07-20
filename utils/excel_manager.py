@@ -1,8 +1,8 @@
 """
 Read/write the Stations Movement Tracker Excel on SharePoint.
 
-In dev_mode the local cache file is used directly (no Graph API calls).
-In production the file is downloaded, modified in memory, and uploaded back.
+In dev_mode the local cache file is used directly (no network calls).
+In production the file is fetched/saved via Power Automate HTTP flows.
 """
 
 import io
@@ -19,10 +19,6 @@ def _is_dev() -> bool:
     return get_config().get("dev_mode", False)
 
 
-def _sharepoint_url() -> str:
-    return get_config()["excel"]["sharepoint_url"]
-
-
 def _local_path() -> Path:
     cfg = get_config()
     return Path(__file__).parent.parent / cfg["excel"]["local_cache_path"]
@@ -35,16 +31,16 @@ def _local_path() -> Path:
 def _download_wb_bytes() -> bytes:
     if _is_dev():
         return _local_path().read_bytes()
-    from utils.graph_client import download_excel_from_sharepoint
-    return download_excel_from_sharepoint(_sharepoint_url())
+    from utils.pa_client import download_excel
+    return download_excel()
 
 
 def _upload_wb_bytes(data: bytes):
     if _is_dev():
         _local_path().write_bytes(data)
         return
-    from utils.graph_client import upload_excel_to_sharepoint
-    upload_excel_to_sharepoint(_sharepoint_url(), data)
+    from utils.pa_client import upload_excel
+    upload_excel(data)
 
 
 @contextmanager
