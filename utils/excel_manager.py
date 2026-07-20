@@ -20,6 +20,14 @@ from openpyxl import load_workbook
 from utils.config import get_config
 
 
+def _sanitize_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert mixed-type columns to strings so PyArrow can serialize them."""
+    for col in df.columns:
+        if df[col].apply(type).nunique() > 1:
+            df[col] = df[col].astype(str).replace("nan", "")
+    return df
+
+
 def _is_dev() -> bool:
     return get_config().get("dev_mode", False)
 
@@ -79,7 +87,7 @@ def _read_sheet_df(sheet_name: str) -> pd.DataFrame:
 def read_quality_sheet() -> pd.DataFrame:
     cfg = get_config()
     df = _read_sheet_df(cfg["excel"]["quality_sheet"])
-    return df.dropna(how="all")
+    return _sanitize_df(df.dropna(how="all"))
 
 
 def append_quality_row(row: dict):
@@ -119,7 +127,7 @@ def update_quality_row_stores(qis_no: str, pickup_status: str, grn_date):
 def read_allocation_sheet() -> pd.DataFrame:
     cfg = get_config()
     df = _read_sheet_df(cfg["excel"]["allocation_sheet"])
-    return df.dropna(subset=["Site Name"])
+    return _sanitize_df(df.dropna(subset=["Site Name"]))
 
 
 def update_cpt_row(site_name: str, allocation: str, remarks: str):
