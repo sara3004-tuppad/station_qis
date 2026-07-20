@@ -40,11 +40,12 @@ with tab_qc:
     else:
         pickup_options = cfg["app"]["pickup_status_options"]
 
-        # Rows pending: Pickup status OR GRN Date is blank
+        _EMPTY = {"", "none", "nan", "nat"}
+
         def _is_pending(row):
-            pickup = str(row.get("Pickup status", "")).strip()
-            grn = str(row.get("GRN Date", "")).strip()
-            return not pickup or not grn or pickup == "" or grn == ""
+            pickup = str(row.get("Pickup status", "")).strip().lower()
+            grn = str(row.get("GRN Date", "")).strip().lower()
+            return pickup in _EMPTY or grn in _EMPTY
 
         pending_mask = qc_df.apply(_is_pending, axis=1)
         pending_df = qc_df[pending_mask].copy()
