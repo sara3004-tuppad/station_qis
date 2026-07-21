@@ -142,8 +142,6 @@ with tab_dispatch:
                 "Site Name", "Site Type", "No of QIS required", "Region", "City",
                 "Lat", "Long", "Address", "POC", "Projected Energization Date",
                 "Priority", "Allocation", "Remarks",
-                "Date of Dispatch", "No of QIS delivered",
-                "Expected date of delivery", "E-Way Bill",
             ]
             disp = {c: selected_row.get(c, "") for c in cols if c in selected_row}
             st.table(pd.Series(disp).rename("Value"))
