@@ -133,8 +133,15 @@ with tab_dispatch:
     if alloc_df.empty:
         st.info("No entries available yet.")
     else:
-        site_options = alloc_df["Site Name"].dropna().tolist()
+        # Only show sites approved by CPT (Allocation == "Yes")
+        approved_df = alloc_df[alloc_df["Allocation"].astype(str).str.strip().str.lower() == "yes"]
+        if approved_df.empty:
+            st.info("No sites approved by CPT yet. CPT team must set Allocation = Yes first.")
+            st.stop()
+
+        site_options = approved_df["Site Name"].dropna().tolist()
         selected_site = st.selectbox("Select Site", site_options, key="dispatch_site")
+        alloc_df = approved_df  # scope subsequent reads to approved only
         selected_row = alloc_df[alloc_df["Site Name"] == selected_site].iloc[0]
 
         with st.expander("Site Details", expanded=True):
