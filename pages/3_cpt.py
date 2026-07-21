@@ -47,7 +47,7 @@ selected_row = df[df["Site Name"] == selected_site].iloc[0]
 # Show full site details so CPT has all info before deciding
 detail_cols = [
     "Site Name", "Site Type", "No of QIS required", "Region", "City",
-    "Address", "POC", "Projected Energization Date", "Priority",
+    "Lat", "Long", "Address", "POC", "Projected Energization Date", "Priority",
 ]
 with st.expander("Site Details", expanded=True):
     disp = {c: selected_row.get(c, "") for c in detail_cols if c in selected_row}

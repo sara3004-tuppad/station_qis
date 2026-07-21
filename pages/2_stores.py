@@ -137,8 +137,14 @@ with tab_dispatch:
         selected_site = st.selectbox("Select Site", site_options, key="dispatch_site")
         selected_row = alloc_df[alloc_df["Site Name"] == selected_site].iloc[0]
 
-        with st.expander("Site Details", expanded=False):
-            cols = ["Site Name", "Site Type", "Region", "City", "Allocation", "Remarks"]
+        with st.expander("Site Details", expanded=True):
+            cols = [
+                "Site Name", "Site Type", "No of QIS required", "Region", "City",
+                "Lat", "Long", "Address", "POC", "Projected Energization Date",
+                "Priority", "Allocation", "Remarks",
+                "Date of Dispatch", "No of QIS delivered",
+                "Expected date of delivery", "E-Way Bill",
+            ]
             disp = {c: selected_row.get(c, "") for c in cols if c in selected_row}
             st.table(pd.Series(disp).rename("Value"))
 
