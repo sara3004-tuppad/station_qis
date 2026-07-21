@@ -76,6 +76,7 @@ def _cached_wb_bytes() -> bytes:
 def _read_sheet_df(sheet_name: str) -> pd.DataFrame:
     raw = _cached_wb_bytes()
     df = pd.read_excel(io.BytesIO(raw), sheet_name=sheet_name, header=1)
+    df.columns = [c.strip() if isinstance(c, str) else c for c in df.columns]
     return df
 
 
